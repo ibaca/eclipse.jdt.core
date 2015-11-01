@@ -168,6 +168,7 @@ public Expression enclosingInstance() {
 }
 
 public void generateCode(BlockScope currentScope, CodeStream codeStream, boolean valueRequired) {
+	cleanUpInferenceContexts();
 	if (!valueRequired)
 		currentScope.problemReporter().unusedObjectAllocation(this);
 
@@ -730,6 +731,17 @@ public InferenceContext18 getInferenceContext(ParameterizedMethodBinding method)
 		return null;
 	return (InferenceContext18) this.inferenceContexts.get(method);
 }
+
+@Override
+public void cleanUpInferenceContexts() {
+	if (this.inferenceContexts == null)
+		return;
+	for (Object value : this.inferenceContexts.valueTable)
+		if (value != null)
+			((InferenceContext18) value).cleanUp();
+	this.inferenceContexts = null;
+}
+
 //-- interface InvocationSite: --
 public ExpressionContext getExpressionContext() {
 	return this.expressionContext;

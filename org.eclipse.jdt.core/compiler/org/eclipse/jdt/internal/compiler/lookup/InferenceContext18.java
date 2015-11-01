@@ -210,6 +210,8 @@ public class InferenceContext18 {
 		this.invocationArguments = arguments;
 		this.currentInvocation = site;
 		this.outerContext = outerContext;
+		if (site instanceof Invocation)
+			scope.compilationUnitScope().registerInferredInvocation((Invocation) site);
 	}
 
 	public InferenceContext18(Scope scope) {
@@ -1632,5 +1634,10 @@ public class InferenceContext18 {
 				forwardResults(result, polyInvocation, methodSubstitute, parameterType);		
 			}
 		}
+	}
+
+	public void cleanUp() {
+		this.b2 = null;
+		this.currentBounds = null;
 	}
 }
