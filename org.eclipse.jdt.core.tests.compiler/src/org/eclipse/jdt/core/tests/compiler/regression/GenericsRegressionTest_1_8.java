@@ -5300,25 +5300,25 @@ public void testBug470958() {
 	runConformTest(
 		new String[] {
 			"Bug470958.java",
-			"import java.time.*;\n" + 
+			"import java.time.*;\n" +
 			"import java.util.*;\n" + 
-			"import java.util.concurrent.*;\n" + 
-			"import static java.util.concurrent.CompletableFuture.*;\n" + 
-			"import static java.util.stream.Collectors.*;\n" + 
+			"import java.util.concurrent.*;\n" +
+			"import static java.util.concurrent.CompletableFuture.*;\n" +
+			"import static java.util.stream.Collectors.*;\n" +
 			"\n" + 
-			"class Hotel {}\n" + 
+			"class Hotel {}\n" +
+			"\n" +
+			"class Bug470958 {\n" +
+			"  public Map<String, CompletableFuture<List<Hotel>>> asyncLoadMany(List<String> codes, LocalDate begin, LocalDate end) {\n" +
+			"    return loadMany(codes, begin, end)\n" +
+			"    .entrySet()\n" +
+			"    .stream()\n" +
+			"    .collect(toMap(Map.Entry::getKey, entry -> completedFuture(entry.getValue())));\n" +
+			"  }\n" +
 			"\n" + 
-			"class Bug470958 {\n" + 
-			"  public Map<String, CompletableFuture<List<Hotel>>> asyncLoadMany(List<String> codes, LocalDate begin, LocalDate end) {\n" + 
-			"    return loadMany(codes, begin, end)\n" + 
-			"    .entrySet()\n" + 
-			"    .stream()\n" + 
-			"    .collect(toMap(Map.Entry::getKey, entry -> completedFuture(entry.getValue())));\n" + 
-			"  }\n" + 
-			"\n" + 
-			"  public Map<String, List<Hotel>> loadMany(List<String> codes, LocalDate begin, LocalDate end) {\n" + 
-			"    return null;\n" + 
-			"  }\n" + 
+			"  public Map<String, List<Hotel>> loadMany(List<String> codes, LocalDate begin, LocalDate end) {\n" +
+			"    return null;\n" +
+			"  }\n" +
 			"}\n"
 		});
 }
@@ -5359,24 +5359,24 @@ public void testBug470826() {
 	runConformTest(
 		new String[] {
 			"EcjVsCollect.java",
-			"import java.util.ArrayList;\n" + 
-			"import java.util.stream.Stream;\n" + 
+			"import java.util.ArrayList;\n" +
+			"import java.util.stream.Stream;\n" +
 			"\n" + 
-			"public class EcjVsCollect {\n" + 
+			"public class EcjVsCollect {\n" +
 			"\n" + 
-			"  public static void main(String[] args) {\n" + 
-			"    try (final Stream<Record<String>> stream = getStream()) {\n" + 
-			"      stream.collect(ArrayList::new, ArrayList::add, ArrayList::addAll);\n" + 
-			"//      ArrayList<Record<String>> foo = stream.collect(ArrayList::new, ArrayList::add, ArrayList::addAll);\n" + 
-			"    }\n" + 
+			"  public static void main(String[] args) {\n" +
+			"    try (final Stream<Record<String>> stream = getStream()) {\n" +
+			"      stream.collect(ArrayList::new, ArrayList::add, ArrayList::addAll);\n" +
+			"//      ArrayList<Record<String>> foo = stream.collect(ArrayList::new, ArrayList::add, ArrayList::addAll);\n" +
+			"    }\n" +
 			"  }\n" + 
 			"\n" + 
-			"  private static <K> Stream<Record<K>> getStream() {\n" + 
-			"    return Stream.empty();\n" + 
-			"  }\n" + 
-			"\n" + 
-			"  private interface Record<K> {\n" + 
-			"    K getKey();\n" + 
+			"  private static <K> Stream<Record<K>> getStream() {\n" +
+			"    return Stream.empty();\n" +
+			"  }\n" +
+			"\n" +
+			"  private interface Record<K> {\n" +
+			"    K getKey();\n" +
 			"  }\n" + 
 			"}\n"
 		});
@@ -5406,7 +5406,7 @@ public void testBug478848() {
 	runConformTest(
 		new String[] {
 			"InferenceBug.java",
-			"import java.util.*;\n" + 
+			"import java.util.*;\n" +
 			"public class InferenceBug {\n" + 
 			"    \n" + 
 			"    static class Wrapper<T> {\n" + 
@@ -5425,11 +5425,11 @@ public void testBug478848() {
 			"    \n" + 
 			"    public static void main(String[] args) {\n" + 
 			"        C1 c1 = new C1();\n" + 
-			"        try {\n" + 
-			"            for (Wrapper<String> attribute: c1.optionalArrayOfStringWrappers().get()) {\n" + 
-			"                // error in previous line:\n" + 
+			"        try {\n" +
+			"            for (Wrapper<String> attribute: c1.optionalArrayOfStringWrappers().get()) {\n" +
+			"                // error in previous line:\n" +
 			"                // Can only iterate over an array or an instance of java.lang.Iterable\n" +
-			"            }\n" + 
+			"            }\n" +
 			"        } catch (NoSuchElementException nsee) {\n" +
 			"            System.out.print(\"No such element\");\n" +
 			"        }\n" + 
@@ -5459,5 +5459,45 @@ public void testBug479167() {
 			"}\n"
 		},
 		"[[Ljava.lang.String;");
+}
+public void testBug479802() {
+    runConformTest(
+        new String[] {
+            "CompilerBugUncheckedCast.java",
+            "public class CompilerBugUncheckedCast {\n" +
+            "    public static void main(String[] args) {\n" +
+            "        Create(true);\n" +
+            "        Create(false);\n" +
+            "    }\n" +
+            "    public interface Base {\n" +
+            "        default String def() { return \"Base\"; }\n" +
+            "    }\n" +
+            "    public interface Intermediate extends Base {\n" +
+            "        @Override default String def() { return \"Intermediate\"; }\n" +
+            "    }\n" +
+            "    public interface Derived extends Intermediate { }\n" +
+            "    public static class MyObject implements Base { }\n" +
+            "    public static final class OldObject extends MyObject implements Derived { }\n" +
+            "    public static final class NewObject extends MyObject implements Derived { }\n" +
+            "    public static <OBJECT extends MyObject & Derived> void Make(OBJECT o) { }\n" +
+            "    public static MyObject Create(boolean old) {\n" +
+            "        MyObject f;\n" +
+            "        if (old) {\n" +
+            "            f = new OldObject();\n" +
+            "        } else {\n" +
+            "            f = new NewObject();\n" +
+            "        }\n" +
+            "        Make(uncheckedCast(f));\n" +
+            "        System.out.println(old);\n" +
+            "        return f;\n" +
+            "    }\n" +
+            "    @SuppressWarnings(\"unchecked\")\n" +
+            "    private static <T extends MyObject & Derived> T uncheckedCast(MyObject f) {\n" +
+            "        return (T) f;\n" +
+            "    }\n" +
+            "}"
+        },
+        "true\n" +
+        "false");
 }
 }
